@@ -1,4 +1,4 @@
-# MedicSearcher
+# Medic Searcher
 Medic Searcherは、近くの医療機関を診療科の種類・医療機関名から検索するサービスです。
 
 ## 対象
