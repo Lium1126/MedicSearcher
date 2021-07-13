@@ -1,0 +1,63 @@
+* {
+  margin: 5px;
+}
+#mapParent {
+  position: relative;
+}
+#map {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}
+#route {
+  position: absolute;
+  top: 5px;
+  left: 615px;
+  text-align: center;
+}
+#addInfo {
+  position: absolute;
+  top: 505px;
+  left: 615px;
+  font-size: 27px;
+}
+#credit {
+  position: absolute;
+  top: 505px;
+}
+body {
+  overflow-x: hidden;
+}
+span {
+  display: inline-block;
+}
+img, a {
+  margin: 0px;
+}
+input, button {
+  font-size: 14px;
+}
+.header{
+  margin: 0 -200%;
+  padding: 0 200%;
+  background: linear-gradient(#ffffff 0%, #b0c4de 100%);
+}
+.header #title{
+  margin: 0;
+}
+.mapBox {
+  width: 600px;
+  height: 500px;
+}
+.boxBorder {
+  border: 1px solid gray;
+}
+.addInfo-inside {
+  vertical-align: middle;
+}
+.active {
+  display: block;
+}
+.passive {
+  display: none;
+}

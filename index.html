@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>Medic Searcher</title>
+    <script type="text/javascript" charset="utf-8" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="https://map.yahooapis.jp/js/V1/jsapi?appid=[アプリケーションID]"></script>
+    <script type="text/javascript" charset="utf-8" src="js/lightbox.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      var slat, slng;        // 現在地の緯度,経度
+      var marker;            // 地図上に表示されるマーカー(経路検索の出発地点)
+      var result;            // 検索結果
+      var showingIndex = 0;  // addInfoエリアに表示している検索結果のインデックス
+
+      // 各種初期化
+      $(function () {
+        // 検索モード変更に対応させる
+        $("input[name='mode']").on("change", function() {
+          $("#medicMode, #strMode").toggleClass("active passive");
+        });
+
+        /*---経路検索のイベントハンドラを登録---*/
+        $("#search").on("click", function() {
+          drawRoute();
+        });
+
+        /*---現在地を取得し、地図を表示---*/
+        navigator.geolocation.getCurrentPosition(drawMap);   // コールバックとして地図を初期描画する
+      });
+
+      // 地図を描画する
+      function drawMap(position) {
+        /*---現在地を取得---*/
+        slat = position.coords.latitude;
+        slng = position.coords.longitude;
+
+        /*---地図を描画---*/
+        var map = new Y.Map("map", {
+          configure : {
+            doubleClickZoom : true,
+            scrollWheelZoom : true,
+            continuousZoom : true
+          }
+        });
+        map.drawMap(new Y.LatLng(slat, slng), 17, Y.LayerSetId.NORMAL);
+
+        /*---現在地にマーカーを描画---*/
+        marker = new Y.Marker(new Y.LatLng(slat, slng));
+        map.addFeature(marker);
+
+        /*---クリックイベントを登録---*/
+        map.bind("click", function(latlng) {
+          // クリックされた地点に現在地の緯度,経度を変更
+          var splitCoord = latlng.toString().split(",");
+          slat = splitCoord[0];
+          slng = splitCoord[1];
+
+          // 変更前のマーカーを削除
+          this.removeFeature(marker);
+
+          // 変更後のマーカーを描画
+          marker = new Y.Marker(new Y.LatLng(slat, slng));
+          this.addFeature(marker);
+        });
+      }
+
+      // 現在地から病院への経路を表示する
+      function drawRoute() {
+        var glat, glng;     // 近くの病院の緯度,経度
+        var code = "0401";  // 検索する業種コード(医療施設全般で初期化)
+        var resultNum = 1;  // 検索する病院の数
+        var localSearchURL = "https://map.yahooapis.jp/search/local/V1/localSearch?appid=[アプリケーションID]&sort=dist&output=json&callback=?&";
+
+        /*---ローカルサーチAPIのURLを作成---*/
+        if ($("input[name='mode']:checked").val() == "medicalDepartment") {   // 診療科で検索
+          /*---診療科の業種コードと検索件数を取得---*/
+          code = $("#medicalDepartments > option:selected").val();
+          resultNum = $("#searchNum > option:selected").val();
+
+          localSearchURL += "results=" + resultNum + "&";
+        } else if ($("input[name='mode']:checked").val() == "string") {       // 医療機関名(文字列)で検索
+          /*---検索文字列を取得---*/
+          var searchStr = $("#searchStr").val();
+
+          localSearchURL += "results=1&"
+          localSearchURL += "query=" + encodeURIComponent(searchStr) + "&";
+        }
+
+        localSearchURL += "lat=" + slat + "&";
+        localSearchURL += "lon=" + slng + "&";
+        localSearchURL += "gc=" + code;
+
+        /*---近くの病院・診療所を検索---*/
+        $.getJSON(localSearchURL, function (data) {
+          result = data; // 検索結果をresultに格納
+
+          // 検索結果が0件の場合(そのことを追加情報欄に表示)
+          if (result.ResultInfo.Count == 0) {
+            $("#addInfo").html("20km範囲内に検索結果がありません");
+            $("#route").empty();
+            $("#route").html("ここに経路地図が表示されます")
+          }
+          // 検索結果がある場合(経路地図を表示)
+          else {
+            var routeMapURL = "https://map.yahooapis.jp/course/V1/routeMap?appid=[アプリケーションID]&width=600&height=500&";
+
+            for (var i = 0;i < result.ResultInfo.Count;i++) {
+              /*---近くの病院の緯度,経度を取得---*/
+              var splitCoord = result.Feature[i].Geometry.Coordinates.split(",");
+              glat = splitCoord[1];
+              glng = splitCoord[0];
+
+              /*---経路地図作成APIへのURLを作成---*/
+              routeMapURL += "route=" + slat + "," + slng + "," + glat + "," + glng + "&";  // 経路
+              routeMapURL += "text=" + glat + "," + glng + "|label:" + encodeURIComponent(result.Feature[i].Name) + "(tel:" + encodeURIComponent(result.Feature[i].Property.Tel1) + ")"; // 施設情報
+              if (i != result.ResultInfo.Count - 1) {
+                routeMapURL += "&";
+              }
+            }
+
+            /*---近くの病院までの経路地図を表示---*/
+            $("#route").html("<a href=" + routeMapURL + " rel='lightbox' id='lightbox'></a>");
+            $("#lightbox").html("<img width='600' height='500' src=" + routeMapURL + ">");
+
+            /*---追加情報を表示---*/
+            showingIndex = 0;  // インデックスを初期化
+            showAddInfo();
+          }
+        });
+      }
+
+      // addInfoエリアに表示する施設情報を、一つ前の施設にする
+      function showPrev() {
+        /*---addInfoエリアを初期化---*/
+        $("#addInfo").empty();
+
+        /*---addInfoエリアに表示する要素のインデックスを前にずらす---*/
+        showingIndex = (showingIndex + result.ResultInfo.Count - 1) % result.ResultInfo.Count;
+
+        /*---addInfoエリアの表示内容を変更する---*/
+        showAddInfo();
+      }
+
+      // addInfoエリアに表示する施設情報を、一つ後の施設にする
+      function showNext() {
+        /*---addInfoエリアを初期化---*/
+        $("#addInfo").empty();
+
+        /*---addInfoエリアに表示する要素のインデックスを後にずらす---*/
+        showingIndex = (showingIndex + 1) % result.ResultInfo.Count;
+
+        /*---addInfoエリアの表示内容を変更する---*/
+        showAddInfo();
+      }
+
+      // addInfoエリアに施設情報を表示する
+      function showAddInfo() {
+        var str = "";      // addInfoエリアに表示するHTML要素の文字列
+        if (result.ResultInfo.Count > 1) {  // 検索結果が複数件ある場合は矢印を表示
+          str += "<span class='addInfo-inside' style='cursor:pointer'><img src='images/prev.png' onclick='showPrev()'></span><span class='addInfo-inside'>";
+        }
+        str += "<p>" + result.Feature[showingIndex].Name + "</p>";
+        str += "<p>Tel:" + result.Feature[showingIndex].Property.Tel1 + "</p>";
+        if (result.ResultInfo.Count > 1) {  // 検索結果が複数軒ある場合は矢印を表示
+          str += "</span><span class='addInfo-inside' style='cursor:pointer'><img src='images/next.png' onclick='showNext()'></span>";
+        }
+        $("#addInfo").html(str);
+      }
+    </script>
+    <link rel="stylesheet" type="text/css" href="css/lightbox.css">
+    <link rel="stylesheet" type="text/css" href="css/MedicSearcher.css">
+  </head>
+  <body>
+    <div class="header">
+      <span id="title"><img src="images/rogo.png" height="55px"></span>
+      <a href="about.html" style="font-size: 13px;">このWebアプリについて</a>
+    </div>
+    <div id="input" class="boxBorder">
+      <input type="radio" name="mode" value="medicalDepartment" checked>診療科
+      <input type="radio" name="mode" value="string">医療機関名
+      <div id="medicMode" class="active">
+        診療科
+        <select id="medicalDepartments">
+          <option value="0401001">歯科</option>
+          <option value="0401002">内科</option>
+          <option value="0401003">小児科</option>
+          <option value="0401004">整形外科</option>
+          <option value="0401005">胃腸科</option>
+          <option value="0401006">外科</option>
+          <option value="0401007">眼科</option>
+          <option value="0401008">皮膚科</option>
+          <option value="0401009">耳鼻咽喉科</option>
+          <option value="0401010">産婦人科</option>
+          <option value="0401011">循環器科</option>
+          <option value="0401012">神経科</option>
+          <option value="0401013">リハビリテーション科</option>
+          <option value="0401014">歯科口腔外科</option>
+          <option value="0401015">泌尿器科</option>
+          <option value="0401016">肛門科</option>
+          <option value="0401017">呼吸器科</option>
+          <option value="0401018">心療内科</option>
+          <option value="0401019">アレルギー科</option>
+          <option value="0401020">脳神経外科</option>
+          <option value="0401021">美容外科</option>
+          <option value="0401022">リウマチ科</option>
+          <option value="0401023">神経内科</option>
+          <option value="0401024">形成外科</option>
+          <option value="0401025">放射線科</option>
+          <option value="0401026">麻酔科</option>
+          <option value="0401027">性病科</option>
+          <option value="0401028">消化器科</option>
+          <option value="0401029">精神科</option>
+          <option value="0401030">呼吸器外科</option>
+          <option value="0401031">心臓血管科</option>
+          <option value="0401032">小児外科</option>
+          <option value="0401033">産科</option>
+          <option value="0401034">婦人科</option>
+          <option value="0401035">気管食道科</option>
+          <option value="0401036">矯正歯科</option>
+          <option value="0401037">小児歯科</option>
+          <option value="0401038">血液内科</option>
+          <option value="0401039">消化器外科</option>
+          <option value="0401040">腎臓内科</option>
+          <option value="0401041">肝臓科</option>
+          <option value="0401042">内視鏡科</option>
+          <option value="0401043">腹部外科</option>
+          <option value="0401044">胸部外科</option>
+          <option value="0401045">内分泌科</option>
+          <option value="0401046">人工透析科</option>
+          <option value="0401047">人間ドック施設</option>
+          <option value="0401048">大学病院</option>
+          <option value="0401049">総合病院</option>
+        </select>
+        <span>
+          <select id="searchNum">
+            <option value="1" checked>1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+          件
+        </span>
+      </div>
+      <div id="strMode" class="passive">
+        医療機関名
+        <input type="text" id="searchStr" placeholder="例)〇〇病院/〇〇クリニック(最大50文字)" size="50" maxlength="50">
+      </div>
+      <input type="button" value="近くの病院・診療所を検索" id="search">
+    </div>
+    <div id="mapParent">
+      <span id="map" class="mapBox boxBorder"></span>
+      <span id="route" class="mapBox boxBorder">ここに経路地図が表示されます</span>
+      <div id="addInfo"></div>
+      <div id="credit">
+        <!-- Begin Yahoo! JAPAN Web Services Attribution Snippet -->
+        <a href="https://developer.yahoo.co.jp/about">
+        <img src="https://s.yimg.jp/images/yjdn/yjdn_attbtn2_88_35.gif" width="88" height="35" title="Webサービス by Yahoo! JAPAN" alt="Webサービス by Yahoo! JAPAN" border="0" style="margin:15px 15px 15px 15px"></a>
+        <!-- End Yahoo! JAPAN Web Services Attribution Snippet -->
+      </div>
+    </div>
+  </body>
+</html>

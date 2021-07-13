@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <title>Medic Searcher</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script>
+      $(function() {
+        $("#pagetop").hide();
+        $(window).scroll(function() {
+          if ($(this).scrollTop() > 200) {
+            $("#pagetop").fadeIn();
+          }
+          else {
+            $("#pagetop").fadeOut();
+          }
+        });
+        $("#pagetop").click(function() {
+          $("html, body").animate({scrollTop: 0}, 500);
+        });
+      });
+    </script>
+    <link rel="stylesheet" type="text/css" href="about/css/about.css">
+  </head>
+  <body>
+    <p id="pagetop"><a href="#header"><img src="about/images/pagetop.png" height="90" width="90"></a></p>
+    <!-- Header(title image, link) -->
+    <div class="header" id="header">
+      <span id="title"><a href="index.html"><img src="images/rogo.png" height="55px"></a></span>
+      <a href="index.html" style="font-size: 13px;">Webアプリに戻る</a>
+    </div>
+    <!-- Table of contents and link each contents -->
+    <div class="tableOfContents">
+      <p>目次</p>
+      <ul>
+        <li><a href="#WhatIsMedicSearcher">Medic Searcherとは?<a></li>
+        <li><a href="#NameOfParts">各部品説明</a></li>
+        <ol>
+          <li><a href="#input">ユーザ入力部</a></li>
+          <li><a href="#map">地図</a></li>
+          <li><a href="#routeMap">経路地図</a></li>
+          <li><a href="#addInfo">施設情報</a></li>
+        </ol>
+        <li><a href="#HowToUse">操作方法</a></li>
+        <ol>
+          <li><a href="#allowLocationInfo">位置情報の取得を許可する</a></li>
+          <li><a href="#searchCondition">検索条件の指定</a></li>
+          <li><a href="#moveMarker">現在地(出発地点)の変更・調整</a></li>
+          <li><a href="#search">検索</a></li>
+        </ol>
+      </ul>
+    </div>
+    <!-- First content(what is Medic Searcher) -->
+    <h2 id="WhatIsMedicSearcher">Medic Searcherとは?</h2>
+    <div class="text">
+      <p>「Medic Searcher」は、近くの医療機関を診療科の種類・医療機関名から検索できます。</p>
+      <p>旅先で急な体調不良…だけど土地勘がなくて近くの病院がわからない…</p>
+      <p>そんな時に使えるのがこの「Medic Searcher」です。</p>
+    </div>
+    <!-- Second content(name of part) -->
+    <h2 id="NameOfParts">各部品説明</h2>
+    <div class="text">
+      <img src="about/images/parts.png" alt="Medic Searcherの画面" class="boxBorder" width="65%" title="Medic Searcherの画面"><br>
+      <!-- Explain of input part -->
+      <h3 id="input">①<span class="subheading">ユーザ入力部</span></h3>
+      <div class="text">
+        <p>ユーザが検索条件を入力する部分です。</p>
+        <p>検索条件を指定した後、「近くの病院・診療所を検索」ボタンをクリックしてください。</p>
+      </div>
+      <!-- Explain of map part -->
+      <h3 id="map">②<span class="subheading">地図</span></h3>
+      <div class="text">
+        <p>出発地点を指定する地図です。</p>
+        <p>地図を操作することで出発地点(マーカー)を移動できます。使用できる操作は以下の通りです。</p>
+        <table>
+          <tr><td>・クリック</td><td>: 出発地点(マーカー)をクリックした位置に移動</td></tr>
+          <tr><td>・ドラッグ</td><td>: 地図の表示範囲を移動</td></tr>
+          <tr><td>・スクロールまたは2本指でピンチ</td><td>: 拡大/縮小</td></tr>
+          <tr><td>・ダブルクリック</td><td>: 拡大</td></tr>
+        </table>
+      </div>
+      <!-- Explain of route map part -->
+      <h3 id="routeMap">③<span class="subheading">経路地図</span></h3>
+      <div class="text">
+        <p>検索にヒットした医療機関への経路を地図で表示します。</p>
+        <p>到着地点には、施設名と電話番号が書かれています。</p>
+        <p>クリックすることで、より見やすくすることができます。</p>
+      </div>
+      <!-- Explain of additional information part -->
+      <h3 id="addInfo">④<span class="subheading">施設情報</span></h3>
+      <div class="text">
+        <p>検索にヒットした医療施設の名前と電話番号を表示します。</p>
+        <p>検索結果が複数件ある場合、近い順に1つずつ表示されます。</p>
+      </div>
+    </div>
+    <!-- Third content(how to use) -->
+    <h2 id="HowToUse">操作方法</h2>
+    <div class="text">
+      <!-- First operation(allow location information acquisition) -->
+      <h3 id="allowLocationInfo">①<span class="subheading">位置情報の取得を許可する</span></h3>
+      <div class="text">
+        <p>「Medic Searcher」を起動すると以下のようなメッセージが表示されます。</p>
+        <span>
+          <img src="about/images/allow_chrome.png" alt="Google Chromeでのメッセージ" class="boxBorder" title="Google Chromeでのメッセージ"><br>
+          <span class="imgHeading">Google Chromeでのメッセージ</span>
+        </span>
+        <span>
+          <img src="about/images/allow_firefox.png" alt="firefoxでのメッセージ" class="boxBorder" title="firefoxでのメッセージ"><br>
+          <span class="imgHeading">firefoxでのメッセージ</span>
+        </span>
+        <p><span class="emphasis">位置情報へのアクセスは必ず許可してください。</span>許可しないと医療機関の検索および経路検索が正しく動作しません。</p>
+        <p>
+          このメッセージは、内部で使用しているJavaScriptの仕様上、セキュリティ保護の観点から必ず表示されるものです。
+          ここで取得した位置情報は、現在地をもとにした地図の作成、近くの医療機関の検索、および経路検索以外には使用しておりません。
+        </p>
+      </div>
+      <!-- Second operation(specify search conditions) -->
+      <h3 id="searchCondition">②<span class="subheading">検索条件の指定</span></h3>
+      <div class="text">
+        <p>まず、ラジオボタンで、診療科の種類で検索するのか医療機関名で検索するのかを選択してください。</p><br>
+        <h4>・診療科の種類で検索する場合</h4>
+        <div class="text">
+          <p>セレクトボックスで探したい診療科と検索結果の最大個数を選択してください。</p>
+          <p>複数件検索した場合、施設情報の欄に表示される施設情報は、より近い医療機関が優先されます。</p>
+        </div>
+        <br>
+        <h4>・医療機関名で検索する場合</h4>
+        <div class="text">
+          <p>テキストボックスに、経路を知りたい医療機関の名前を入力してください。</p>
+        </div>
+      </div>
+      <!-- Third operation(change starting point) -->
+      <h3 id="moveMarker">③<span class="subheading">現在地(出発地点)の変更・調整</span></h3>
+      <div class="text">
+        <p style="font-size: 20px; color: red;">!アクセス時に取得した現在地からの経路を検索する場合は、この操作は不要です</p>
+        <p>「Medic Searcher」を起動すると、自動で現在地を取得し、その点を経路検索の出発地点とします。</p>
+        <p>出発地点を変更する場合、地図を操作し出発地点とする点をクリックしてください。クリックすると、地図内のマーカーが移動します。</p>
+        <p>マーカーのある地点が、経路探索の出発地点となります。</p>
+      </div>
+      <!-- Fourth operation(search) -->
+      <h3 id="search">④<span class="subheading">検索</span></h3>
+      <div class="text">
+        <p>「近くの病院・診療所を検索」ボタンをクリックしてください。</p>
+        <p>経路地図が表示されます。経路地図をクリックすると、より見やすく表示します。</p>
+        <p>また、経路地図の下に検索にヒットした医療機関の名前、電話番号が表示されます。</p>
+        <p><span class="emphasis">医療機関を検索できる範囲は、地図で指定した出発地点を中心に20km圏内です。</span></p>
+      </div>
+    </div>
+    <!-- Link for Web app -->
+    <br>
+    <div class="text">
+      それでは、使ってみましょう!<a href="index.html"><img src="images/rogo.png" height="40px" align="middle"></a>
+    </div>
+    <br>
+    <!-- Footer(Self-introduction) -->
+    <div class="footer">
+      <p id="footer-title">About developer</p>
+      <div>
+        <span style="text-align: center;" class="footer-inside">
+          <img src="images/profile.png" height="80" width="80">
+          <p>K19061</p>
+        </span>
+        <span class="footer-inside">
+          <p>Languages I've used</p>
+          <ul>
+            <li>Assembly language</li>
+            <li>C</li>
+            <li>C++</li>
+            <li>Python</li>
+            <li>HTML</li>
+            <li>JavaScript</li>
+            <li>PHP</li>
+          </ul>
+        </span>
+        <span class="footer-inside">
+          <p>Learning skills</p>
+          <ul>
+            <li>C</li>
+            <li>JavaScript</li>
+          </ul>
+        </span>
+        <span class="footer-inside">
+          <p>Contact</p>
+          <table>
+            <tr><td>E-mail</td><td>: k19061kk@aitech.ac.jp</td></tr>
+            <tr><td>direct</td><td>: Aichi Institute of Technology Faculty of Information Science</td></tr>
+          </table>
+        </span>
+      </div>
+    </div>
+  </body>
+</html>
